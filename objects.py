@@ -67,6 +67,9 @@ class Gamespace(object):
 
 			if event.type == MOUSEBUTTONDOWN:
 				self.deathstar.is_firing = True
+				mx, my = pygame.mouse.get_pos()
+				self.xfire = mx
+				self.yfire = my
 
 			if event.type == MOUSEBUTTONUP:
 				self.deathstar.is_firing = False
@@ -112,29 +115,31 @@ class Deathstar(pygame.sprite.Sprite):
 		self.is_firing = False
 
 	def tick(self):
-		#get mouse position
-		mx, my = pygame.mouse.get_pos()
-
-		#get center coordinates
-		cx = self.rect.centerx
-		cy = self.rect.centery
-
-		#calculate slope
-		angle = atan2(my - cy, mx - cx)
-
-		#rotate image
-		self.image = pygame.transform.rotate(self.orig_image, (degrees(angle) + 45) * -1)
-		self.rect = self.image.get_rect(center = self.rect.center)
-
-		#move deathstar by adding velocity
-		if self.is_moving:
-			self.rect = self.rect.move(self.velocity[0], self.velocity[1])
-
 		if self.is_firing:
-			mx, my = pygame.mouse.get_pos()
-			cx, cy = self.rect.center
 			new_laser = Laser(self.gs)
 			self.gs.lasers.append(new_laser)
+
+		# if deathstar is not firing, then rotate it and check if it should be moving
+		else:
+			#get mouse position
+			mx, my = pygame.mouse.get_pos()
+
+			#get center coordinates
+			cx = self.rect.centerx
+			cy = self.rect.centery
+
+			#calculate slope
+			angle = atan2(my - cy, mx - cx)
+
+			#rotate image
+			self.image = pygame.transform.rotate(self.orig_image, (degrees(angle) + 45) * -1)
+			self.rect = self.image.get_rect(center = self.rect.center)
+
+			#move deathstar by adding velocity
+			if self.is_moving:
+				self.rect = self.rect.move(self.velocity[0], self.velocity[1])
+
+
 
 class Earth(pygame.sprite.Sprite):
 
@@ -162,12 +167,10 @@ class Laser(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = gs.deathstar.rect.center
 		cx, cy = gs.deathstar.rect.center
-		x, y = pygame.mouse.get_pos()
-
 
 		#calculate change in x and y
 		velocity = 7
-		angle = atan2(y - cy, x - cx)
+		angle = atan2(self.gs.yfire - cy, self.gs.xfire - cx)
 		self.dx = velocity * cos(angle)
 		self.dy = velocity * sin(angle)
 
