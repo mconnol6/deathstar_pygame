@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
+from math import atan2, pi, degrees
 
 class Gamespace(object):
 	def main(self):
@@ -46,8 +47,9 @@ class Gamespace(object):
 		pygame.display.flip()
 
 	def ticks(self):
-		self.earth.tick()
 
+		self.earth.tick()
+		self.deathstar.tick()
 		
 
 class Deathstar(pygame.sprite.Sprite):
@@ -61,9 +63,23 @@ class Deathstar(pygame.sprite.Sprite):
 		self.rect.center = 100, 100
 
 		self.orig_image = self.image
+		self.orig_rect = self.image.get_rect()
 
 	def tick(self):
-		pass
+		#get mouse position
+		mx, my = pygame.mouse.get_pos()
+
+		#get center coordinates
+		cx = self.rect.centerx
+		cy = self.rect.centery
+
+		#calculate slope
+		angle = atan2(my - cy, mx - cx)
+
+		#rotate image
+		self.image = pygame.transform.rotate(self.orig_image, (degrees(angle) + 45) * -1)
+		self.rect = self.image.get_rect()
+		self.rect.center = self.orig_rect.center
 
 class Earth(pygame.sprite.Sprite):
 
