@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
-from math import atan2, pi, degrees
+from math import atan2, pi, degrees, sin, cos
 
 class Gamespace(object):
 	def main(self):
@@ -14,6 +14,8 @@ class Gamespace(object):
 
 		self.deathstar = Deathstar(self)
 		self.earth = Earth(self)
+		#list of lasers
+		self.lasers = [] 
 
 		while 1:
 			#click tick
@@ -40,12 +42,20 @@ class Gamespace(object):
 		#draw deathstar
 		self.screen.blit(self.deathstar.image, self.deathstar.rect)
 
+		#draw lasers
+		for laser in self.lasers:
+			self.screen.blit(laser.image, laser.rect)
+
 		pygame.display.flip()
 
 	def ticks(self):
 
 		self.earth.tick()
 		self.deathstar.tick()
+		
+		for laser in self.lasers:
+			laser.tick()
+			
 		
 	def handle_events(self):
 
@@ -54,6 +64,12 @@ class Gamespace(object):
 			#quit game
 			if event.type == QUIT:
 				sys.exit()
+
+			if event.type == MOUSEBUTTONDOWN:
+				mx, my = pygame.mouse.get_pos()
+				cx, cy = self.deathstar.rect.center
+				new_laser = Laser(cx, cy, mx, my, self)
+				self.lasers.append(new_laser)
 
 			if event.type == KEYDOWN:
 				#if arrow pressed, change velocity of deathstar
@@ -122,10 +138,25 @@ class Earth(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = 600, 400
 
-		self.orig_image = self.image
-
 		self.exploding = False
 
 	def tick(self):
 
 		pass
+
+class Laser(pygame.sprite.Sprite):
+
+	def __init__(self, cx, cy, x, y, gs=None):
+		pygame.sprite.Sprite.__init__(self)
+
+		self.gs = gs
+		self.image = pygame.image.load("media/laser.png")
+		self.rect = self.image.get_rect()
+		self.rect.center = cx, cy
+		self.velocity = 5
+		self.angle = atan2(y - cy, x - cx)
+		self.dx = self.velocity * cos(self.angle)
+		self.dy = self.velocity * sin(self.angle)
+
+	def tick(self):
+		self.rect = self.rect.move(self.dx*self.velocity, self.dy*self.velocity)
