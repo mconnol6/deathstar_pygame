@@ -26,6 +26,28 @@ class Gamespace(object):
 				if event.type == QUIT:
 					sys.exit()
 
+				if event.type == KEYDOWN:
+					#get pressed buttons
+					pressed = pygame.key.get_pressed()
+
+					#if arrow pressed, change velocity of deathstar
+					if pressed[pygame.K_DOWN]:
+						self.deathstar.is_moving = True
+						self.deathstar.velocity = 0, 10
+					if pressed[pygame.K_UP]:
+						self.deathstar.is_moving = True
+						self.deathstar.velocity = 0, -10
+					if pressed[pygame.K_RIGHT]:
+						self.deathstar.is_moving = True
+						self.deathstar.velocity = 10, 0
+					if pressed[pygame.K_LEFT]:
+						self.deathstar.is_moving = True
+						self.deathstar.velocity = -10, 0
+
+				if event.type == KEYUP:
+					if pressed[pygame.K_DOWN] or pressed[pygame.K_UP] or pressed[pygame.K_RIGHT] or pressed[pygame.K_LEFT]:
+						self.deathstar.is_moving = False
+
 			#tick updates
 			self.ticks()
 
@@ -65,6 +87,10 @@ class Deathstar(pygame.sprite.Sprite):
 		self.orig_image = self.image
 		self.orig_rect = self.image.get_rect()
 
+		# deathstar velocity
+		self.is_moving = False
+		self.velocity = 0, 0
+
 	def tick(self):
 		#get mouse position
 		mx, my = pygame.mouse.get_pos()
@@ -78,8 +104,11 @@ class Deathstar(pygame.sprite.Sprite):
 
 		#rotate image
 		self.image = pygame.transform.rotate(self.orig_image, (degrees(angle) + 45) * -1)
-		self.rect = self.image.get_rect()
-		self.rect.center = self.orig_rect.center
+		self.rect = self.image.get_rect(center = self.rect.center)
+
+		#move deathstar by adding velocity
+		if self.is_moving:
+			self.rect = self.rect.move(self.velocity[0], self.velocity[1])
 
 class Earth(pygame.sprite.Sprite):
 
