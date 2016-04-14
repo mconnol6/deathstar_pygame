@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
-from math import atan2, pi, degrees, sin, cos
+from math import atan2, pi, degrees, sin, cos, sqrt
 
 class Gamespace(object):
 	def main(self):
@@ -16,6 +16,7 @@ class Gamespace(object):
 		self.earth = Earth(self)
 		#list of lasers
 		self.lasers = [] 
+		self.explosion = None
 
 		while 1:
 			#click tick
@@ -46,6 +47,9 @@ class Gamespace(object):
 		for laser in self.lasers:
 			self.screen.blit(laser.image, laser.rect)
 
+		if self.explosion:
+			self.screen.blit(self.explosion.image, self.explosion.rect)
+
 		pygame.display.flip()
 
 	def ticks(self):
@@ -55,6 +59,9 @@ class Gamespace(object):
 		
 		for laser in self.lasers:
 			laser.tick()
+
+		if self.explosion:
+			self.explosion.tick()
 			
 		
 	def handle_events(self):
@@ -150,12 +157,38 @@ class Earth(pygame.sprite.Sprite):
 		self.image = pygame.image.load("media/globe.png")
 		self.rect = self.image.get_rect()
 		self.rect.center = 600, 400
+		self.radius = self.rect.height / 2 - 15
+		self.hitpoints = 40
+		self.explodingpoints = 5
 
 		self.exploding = False
 
 	def tick(self):
 
-		pass
+		if not self.exploding:
+			#for each laser, check if collided with earth
+			i = 0
+			while i < len(self.gs.lasers):
+				x, y = self.gs.lasers[i].rect.center
+				gx, gy = self.rect.center
+				d = sqrt((x-gx)*(x-gx) + (y-gy)*(y-gy))
+				if self.radius > d:
+					self.hitpoints = self.hitpoints - 1
+
+					#remove laser from vector
+					del self.gs.lasers[i]
+				else:
+					i = i + 1
+
+			if self.hitpoints == 20:
+				self.image = pygame.image.load("media/globe_red100.png")
+
+			if self.hitpoints == 0:
+				self.image = pygame.image.load("media/empty.png")
+				self.exploding = True
+				self.gs.explosion = Explosion()
+				self.sound = pygame.mixer.Sound("media/explode.wav")
+				self.sound.play()
 
 class Laser(pygame.sprite.Sprite):
 
@@ -178,3 +211,18 @@ class Laser(pygame.sprite.Sprite):
 
 	def tick(self):
 		self.rect = self.rect.move(self.dx, self.dy)
+
+class Explosion(pygame.sprite.Sprite):
+	def __init__(self, gs=None):
+		pygame.sprite.Sprite.__init__(self)
+
+		self.gs = gs
+		self.images = ["media/explosion/frames015a.png", "media/explosion/frames015a.png", "media/explosion/frames014a.png", "media/explosion/frames013a.png", "media/explosion/frames012a.png", "media/explosion/frames011a.png", "media/explosion/frames010a.png", "media/explosion/frames009a.png", "media/explosion/frames008a.png", "media/explosion/frames007a.png", "media/explosion/frames006a.png", "media/explosion/frames005a.png", "media/explosion/frames004a.png", "media/explosion/frames003a.png", "media/explosion/frames002a.png", "media/explosion/frames001a.png", "media/explosion/frames000a.png"]
+		self.image = pygame.image.load(self.images[-1])
+		self.rect = self.image.get_rect()
+		self.rect.center = 600, 400
+
+	def tick(self):
+		if len(self.images) >= 2:
+			del self.images[-1]
+			self.image = pygame.image.load(self.images[-1])
