@@ -20,33 +20,7 @@ class Gamespace(object):
 			self.clock.tick(60)
 
 			#handle events
-			for event in pygame.event.get():
-
-				#quit game
-				if event.type == QUIT:
-					sys.exit()
-
-				if event.type == KEYDOWN:
-					#get pressed buttons
-					pressed = pygame.key.get_pressed()
-
-					#if arrow pressed, change velocity of deathstar
-					if pressed[pygame.K_DOWN]:
-						self.deathstar.is_moving = True
-						self.deathstar.velocity = 0, 10
-					if pressed[pygame.K_UP]:
-						self.deathstar.is_moving = True
-						self.deathstar.velocity = 0, -10
-					if pressed[pygame.K_RIGHT]:
-						self.deathstar.is_moving = True
-						self.deathstar.velocity = 10, 0
-					if pressed[pygame.K_LEFT]:
-						self.deathstar.is_moving = True
-						self.deathstar.velocity = -10, 0
-
-				if event.type == KEYUP:
-					if pressed[pygame.K_DOWN] or pressed[pygame.K_UP] or pressed[pygame.K_RIGHT] or pressed[pygame.K_LEFT]:
-						self.deathstar.is_moving = False
+			self.handle_events()
 
 			#tick updates
 			self.ticks()
@@ -73,6 +47,34 @@ class Gamespace(object):
 		self.earth.tick()
 		self.deathstar.tick()
 		
+	def handle_events(self):
+
+		for event in pygame.event.get():
+
+			#quit game
+			if event.type == QUIT:
+				sys.exit()
+
+			if event.type == KEYDOWN:
+				#if arrow pressed, change velocity of deathstar
+				if event.key == pygame.K_DOWN:
+					self.deathstar.is_moving = True
+					self.deathstar.velocity = 0, 10
+				if event.key == pygame.K_UP:
+					self.deathstar.is_moving = True
+					self.deathstar.velocity = 0, -10
+				if event.key == pygame.K_RIGHT:
+					self.deathstar.is_moving = True
+					self.deathstar.velocity = 10, 0
+				if event.key == pygame.K_LEFT:
+					self.deathstar.is_moving = True
+					self.deathstar.velocity = -10, 0
+
+			# if arrow is not being pressed anymore, stop deathstar from moving
+			if event.type == KEYUP:
+				if event.key == pygame.K_UP or event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT or event.key == K_LEFT: 
+					self.deathstar.is_moving = False
+
 
 class Deathstar(pygame.sprite.Sprite):
 
