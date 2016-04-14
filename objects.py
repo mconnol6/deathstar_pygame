@@ -11,8 +11,6 @@ class Gamespace(object):
 		self.screen = pygame.display.set_mode(self.size)
 		self.clock = pygame.time.Clock()
 
-		black = 0, 0, 0
-
 		self.deathstar = Deathstar(self)
 		self.earth = Earth(self)
 
@@ -27,21 +25,44 @@ class Gamespace(object):
 				if event.type == QUIT:
 					sys.exit()
 
-			#black screen
-			self.screen.fill(black)
-
 			#tick updates
-			self.earth.tick()
+			self.ticks()
 
-			#display images
-			self.screen.blit(self.earth.image, self.earth.rect)
+			#draw images
+			self.draw_images()
 
-			pygame.display.flip()
+
+	def draw_images(self):
+		#black screen
+		black = 0, 0, 0
+		self.screen.fill(black)
+
+		#draw earth
+		self.screen.blit(self.earth.image, self.earth.rect)
+
+		#draw deathstar
+		self.screen.blit(self.deathstar.image, self.deathstar.rect)
+
+		pygame.display.flip()
+
+	def ticks(self):
+		self.earth.tick()
+
+		
 
 class Deathstar(pygame.sprite.Sprite):
 
-	#pass in gamespace as argument
 	def __init__(self, gs=None):
+		pygame.sprite.Sprite.__init__(self)
+
+		self.gs = gs
+		self.image = pygame.image.load("media/deathstar.png")
+		self.rect = self.image.get_rect()
+		self.rect.center = 100, 100
+
+		self.orig_image = self.image
+
+	def tick(self):
 		pass
 
 class Earth(pygame.sprite.Sprite):
@@ -50,7 +71,7 @@ class Earth(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.__init__(self)
 
 		self.gs = gs
-		self.image = pygame.image.load("globe.bmp")
+		self.image = pygame.image.load("media/globe.png")
 		self.rect = self.image.get_rect()
 		self.rect.center = 600, 400
 
