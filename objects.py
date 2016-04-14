@@ -66,11 +66,11 @@ class Gamespace(object):
 				sys.exit()
 
 			if event.type == MOUSEBUTTONDOWN:
-				mx, my = pygame.mouse.get_pos()
-				cx, cy = self.deathstar.rect.center
-				new_laser = Laser(cx, cy, mx, my, self)
-				self.lasers.append(new_laser)
+				self.deathstar.is_firing = True
 
+			if event.type == MOUSEBUTTONUP:
+				self.deathstar.is_firing = False
+			
 			if event.type == KEYDOWN:
 				#if arrow pressed, change velocity of deathstar
 				if event.key == pygame.K_DOWN:
@@ -109,6 +109,8 @@ class Deathstar(pygame.sprite.Sprite):
 		self.is_moving = False
 		self.velocity = 0, 0
 
+		self.is_firing = False
+
 	def tick(self):
 		#get mouse position
 		mx, my = pygame.mouse.get_pos()
@@ -127,6 +129,12 @@ class Deathstar(pygame.sprite.Sprite):
 		#move deathstar by adding velocity
 		if self.is_moving:
 			self.rect = self.rect.move(self.velocity[0], self.velocity[1])
+
+		if self.is_firing:
+			mx, my = pygame.mouse.get_pos()
+			cx, cy = self.rect.center
+			new_laser = Laser(cx, cy, mx, my, self)
+			self.gs.lasers.append(new_laser)
 
 class Earth(pygame.sprite.Sprite):
 
@@ -153,10 +161,14 @@ class Laser(pygame.sprite.Sprite):
 		self.image = pygame.image.load("media/laser.png")
 		self.rect = self.image.get_rect()
 		self.rect.center = cx, cy
-		self.velocity = 5
-		self.angle = atan2(y - cy, x - cx)
-		self.dx = self.velocity * cos(self.angle)
-		self.dy = self.velocity * sin(self.angle)
+
+		#calculate change in x and y
+		velocity = 7
+		angle = atan2(y - cy, x - cx)
+		self.dx = velocity * cos(angle)
+		self.dy = velocity * sin(angle)
+
+		self.rect = self.rect.move(self.dx * 7, self.dy * 7)
 
 	def tick(self):
-		self.rect = self.rect.move(self.dx*self.velocity, self.dy*self.velocity)
+		self.rect = self.rect.move(self.dx, self.dy)
