@@ -133,7 +133,7 @@ class Deathstar(pygame.sprite.Sprite):
 		if self.is_firing:
 			mx, my = pygame.mouse.get_pos()
 			cx, cy = self.rect.center
-			new_laser = Laser(cx, cy, mx, my, self)
+			new_laser = Laser(self.gs)
 			self.gs.lasers.append(new_laser)
 
 class Earth(pygame.sprite.Sprite):
@@ -154,13 +154,16 @@ class Earth(pygame.sprite.Sprite):
 
 class Laser(pygame.sprite.Sprite):
 
-	def __init__(self, cx, cy, x, y, gs=None):
+	def __init__(self, gs=None):
 		pygame.sprite.Sprite.__init__(self)
 
 		self.gs = gs
 		self.image = pygame.image.load("media/laser.png")
 		self.rect = self.image.get_rect()
-		self.rect.center = cx, cy
+		self.rect.center = gs.deathstar.rect.center
+		cx, cy = gs.deathstar.rect.center
+		x, y = pygame.mouse.get_pos()
+
 
 		#calculate change in x and y
 		velocity = 7
